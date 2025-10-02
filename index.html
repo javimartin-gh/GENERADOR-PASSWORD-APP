@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador de Contraseñas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    input[type="text"] {
+      font-family: 'Fira Code', monospace;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow-2xl rounded-xl p-6 w-full max-w-md border border-purple-300">
+    <h1 class="text-3xl font-semibold text-center mb-6 text-purple-700">🔐 Generador de Contraseñas</h1>
+
+    <label class="block mb-2 font-medium text-gray-700">Longitud: <span id="lengthValue" class="text-purple-600 font-bold">12</span></label>
+    <input type="range" id="length" min="6" max="90" value="12" class="w-full mb-4 accent-purple-500" oninput="updateLength()" />
+
+    <div class="grid grid-cols-2 gap-2 mb-4 text-sm">
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" id="uppercase" checked />
+        <span>Mayúsculas (A-Z)</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" id="lowercase" checked />
+        <span>Minúsculas (a-z)</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" id="numbers" checked />
+        <span>Números (0-9)</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" id="symbols" checked />
+        <span>Símbolos (!@#$...)</span>
+      </label>
+    </div>
+
+    <button onclick="generatePassword()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 transition">✨ Generar</button>
+
+    <div class="mt-4">
+      <label class="block font-medium text-gray-700 mb-1">Contraseña:</label>
+      <div class="flex items-center space-x-2">
+        <input type="text" id="result" readonly class="w-full p-2 border rounded bg-gray-50 text-sm" />
+        <button onclick="copyToClipboard()" class="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">📋</button>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <label class="block font-medium text-gray-700 mb-1">Fortaleza:</label>
+      <div id="strength" class="text-sm font-semibold text-gray-800">—</div>
+    </div>
+
+    <div class="mt-6 text-sm text-gray-600">
+      <p><strong>Instrucciones:</strong></p>
+      <ul class="list-disc pl-5 mt-2 space-y-1">
+        <li>Usa el slider para elegir la longitud.</li>
+        <li>Selecciona los tipos de caracteres que deseas incluir.</li>
+        <li>Haz clic en <strong>“Generar”</strong> y copia con 📋.</li>
+        <li>La fortaleza se calcula según variedad y longitud.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function updateLength() {
+      const val = document.getElementById("length").value;
+      document.getElementById("lengthValue").textContent = val;
+    }
+
+    function generatePassword() {
+      const length = parseInt(document.getElementById("length").value);
+      const useUpper = document.getElementById("uppercase").checked;
+      const useLower = document.getElementById("lowercase").checked;
+      const useNumbers = document.getElementById("numbers").checked;
+      const useSymbols = document.getElementById("symbols").checked;
+
+      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const lower = "abcdefghijklmnopqrstuvwxyz";
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+      let allChars = "";
+      if (useUpper) allChars += upper;
+      if (useLower) allChars += lower;
+      if (useNumbers) allChars += numbers;
+      if (useSymbols) allChars += symbols;
+
+      if (!allChars) {
+        alert("Selecciona al menos una opción de caracteres.");
+        return;
+      }
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+      }
+
+      document.getElementById("result").value = password;
+      evaluateStrength(password, allChars.length, length);
+    }
+
+    function evaluateStrength(password, poolSize, length) {
+      const entropy = Math.log2(poolSize) * length;
+      const strengthEl = document.getElementById("strength");
+      let strength = "";
+      let color = "";
+
+      if (length < 10) {
+        strength = "Muy débil 🔴";
+        color = "text-red-600";
+      } else if (entropy < 40) {
+        strength = "Débil 🟠";
+        color = "text-orange-500";
+      } else if (entropy < 60) {
+        strength = "Media 🟡";
+        color = "text-yellow-500";
+      } else if (entropy < 80) {
+        strength = "Fuerte 🟢";
+        color = "text-green-600";
+      } else {
+        strength = "Muy fuerte 🔵";
+        color = "text-blue-600";
+      }
+
+      strengthEl.textContent = strength;
+      strengthEl.className = `text-sm font-semibold ${color}`;
+    }
+
+    function copyToClipboard() {
+      const result = document.getElementById("result");
+      result.select();
+      document.execCommand("copy");
+      alert("Contraseña copiada al portapapeles.");
+    }
+  </script>
+</body>
+</html>
